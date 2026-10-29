@@ -2055,7 +2055,7 @@ vec = resp.data[0].embedding   # a list of 1,536 floats
           name: "Embedding ngữ nghĩa",
           body: "Một biểu diễn số học của nội dung, là một vector các số dấu phẩy động, cho phép đo độ tương đồng ngữ nghĩa: khoảng cách giữa hai embedding đo mức độ liên quan của hai văn bản. Embedding được tạo ra bởi một mô hình embedding và dùng cho tìm kiếm, phân cụm, gợi ý, phát hiện bất thường và phân loại. Câu truy vấn và tài liệu phải được embed bằng cùng một mô hình. Anthropic không cung cấp mô hình embedding riêng mà giới thiệu các nhà cung cấp như Voyage AI; OpenAI có text-embedding-3-small (1.536 chiều) và text-embedding-3-large (3.072 chiều)."
         },
-        related: ["Vector", "RAG", "Fine Tuning", "Latent Space"]
+        related: ["Vector", "Embedding Model", "RAG", "Fine Tuning", "Latent Space"]
       },
       {
         id: "latent-space",
@@ -2118,6 +2118,50 @@ cosine([1, 0],    [-1, 0])     # -1.0 → opposite`,
         related: ["Similarity Search", "Vector", "Embedding"]
       },
       {
+        id: "embedding-model",
+        name: "Embedding Model",
+        fullName: "Text Embedding Model",
+        level: "basic",
+        group: "Embedding Models",
+        body: "The model that turns content (text, and for multimodal models images or video) into embeddings. Retrieval models are usually bi-encoders trained with contrastive learning so that related texts land close together. Each model defines its own vector space, so query and document vectors must come from compatible models and changing models normally means re-embedding the whole corpus. Some providers relax this: Voyage AI's Voyage 4 models share one space, so you can embed documents with voyage-4-large and queries with the cheaper voyage-4-lite. To choose, test retrieval quality on your own data (MTEB only gives a shortlist), and check language and domain (Voyage offers code, finance and legal models), maximum input length (8,192 tokens for OpenAI's text-embedding-3 models, 32,000 for Voyage 4), vector size and storage cost, and hosted API versus open weights you run yourself. Many retrieval models also expect you to label each input as a query or a document.",
+        example: `import voyageai
+
+vo = voyageai.Client()
+
+# Index once: documents with the most accurate model
+doc_vecs = vo.embed(chunks, model="voyage-4-large",
+                    input_type="document").embeddings
+
+# Every request: the query with a cheaper model from the same family
+q_vec = vo.embed([question], model="voyage-4-lite",
+                 input_type="query").embeddings[0]
+
+# Vectors from different families (text-embedding-3-small vs voyage-4)
+# are not comparable: switching families means re-embedding every chunk.`,
+        sources: [
+          {
+            "label": "Anthropic — Claude docs: Embeddings",
+            "url": "https://platform.claude.com/docs/en/build-with-claude/embeddings",
+            "note": "Factors for choosing a provider, the Voyage model list with context lengths and dimensions, and input_type for queries and documents."
+          },
+          {
+            "label": "Voyage AI blog — The Voyage 4 model family (Jan 2026)",
+            "url": "https://blog.voyageai.com/2026/01/15/voyage-4/",
+            "note": "Shared embedding space and asymmetric retrieval: documents and queries embedded with different Voyage 4 models, without re-vectorizing documents."
+          },
+          {
+            "label": "OpenAI API docs — Vector embeddings",
+            "url": "https://developers.openai.com/api/docs/guides/embeddings",
+            "note": "text-embedding-3 models: dimensions and 8,192-token maximum input."
+          }
+        ],
+        vi: {
+          name: "Mô hình embedding",
+          body: "Mô hình biến nội dung (văn bản, và với mô hình đa phương thức là cả hình ảnh hay video) thành embedding. Các mô hình dùng cho truy xuất thường là bi-encoder được huấn luyện bằng học tương phản để các văn bản liên quan nằm gần nhau. Mỗi mô hình định nghĩa một không gian vector riêng, nên vector của câu truy vấn và tài liệu phải đến từ các mô hình tương thích, và đổi mô hình thường đồng nghĩa với việc embed lại toàn bộ kho dữ liệu. Một số nhà cung cấp nới lỏng điều này: các mô hình Voyage 4 của Voyage AI dùng chung một không gian, nên bạn có thể embed tài liệu bằng voyage-4-large và câu truy vấn bằng voyage-4-lite rẻ hơn. Để chọn mô hình, hãy kiểm tra chất lượng truy xuất trên chính dữ liệu của bạn (MTEB chỉ giúp lập danh sách rút gọn), và xem xét ngôn ngữ và lĩnh vực (Voyage có mô hình cho mã nguồn, tài chính và pháp lý), độ dài đầu vào tối đa (8.192 token với các mô hình text-embedding-3 của OpenAI, 32.000 với Voyage 4), kích thước vector và chi phí lưu trữ, cũng như dùng API có sẵn hay tự chạy mô hình open-weight. Nhiều mô hình truy xuất còn yêu cầu bạn đánh dấu mỗi đầu vào là câu truy vấn hay tài liệu."
+        },
+        related: ["Embedding", "Bi-Encoder", "MTEB", "Matryoshka Embeddings"]
+      },
+      {
         id: "bi-encoder",
         name: "Bi-Encoder",
         fullName: "Embedding Model (Bi-Encoder)",
@@ -2140,7 +2184,7 @@ Cross-encoder  (query, doc) read together           slow, precise         rerank
           name: "Mô hình embedding hai bộ mã hoá",
           body: "Mô hình embedding mã hoá độc lập từng văn bản thành một vector rồi tính độ tương đồng bằng một thước đo khoảng cách. Vì tài liệu được mã hoá tách biệt khỏi câu truy vấn, vector của chúng có thể tính một lần rồi đánh chỉ mục, nên tìm kiếm nhanh. Ngược lại, cross-encoder (reranker) xử lý câu truy vấn và tài liệu cùng lúc và trả về một điểm liên quan; nó chính xác hơn vì hai văn bản chú ý lẫn nhau, nhưng phải chạy trên từng cặp. Vì vậy mới có thiết kế hai giai đoạn phổ biến: lấy ứng viên bằng bi-encoder, rồi xếp hạng lại bằng cross-encoder."
         },
-        related: ["Embedding", "Reranking", "Late Interaction"]
+        related: ["Embedding Model", "Embedding", "Reranking", "Late Interaction"]
       },
       {
         id: "late-interaction",

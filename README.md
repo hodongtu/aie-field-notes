@@ -17,7 +17,7 @@ network connection.
 
 | Area | Content |
 | --- | --- |
-| Glossary | 340 terms in 13 categories, split into *Concepts* (vendor-neutral) and *Platforms & Tools* (LangChain/LangGraph, Model Context Protocol, Databricks AI) |
+| Glossary | 341 terms in 13 categories, split into *Concepts* (vendor-neutral) and *Platforms & Tools* (LangChain/LangGraph, Model Context Protocol, Databricks AI) |
 | Best Practices | 8 playbooks, 78 practices — RAG, prompting, agents, evaluation, LLMOps, cost & latency, security, Databricks |
 | Practice exams | 3 exams (basic / intermediate / advanced), 152 questions, each answer linked back to the terms it covers |
 
